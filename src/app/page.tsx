@@ -99,9 +99,19 @@ export default function Home() {
     }
   };
 
-  // Scroll to top when step changes
+  // Scroll to top when step changes - multiple approaches for mobile compatibility
   useEffect(() => {
-    window.scrollTo(0, 0);
+    // Immediate scroll
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0; // For Safari
+
+    // Delayed scroll as fallback for mobile browsers
+    setTimeout(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }, 50);
   }, [step]);
 
   // Fetch representatives when entering call step
