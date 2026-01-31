@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { OpenStatesBill } from '@/types/openstates';
 import { UserPreference } from '@/types';
 import { BillAnalysis } from '@/lib/claude';
@@ -13,28 +13,31 @@ import {
   CachedAnalysis,
 } from '@/lib/cache';
 
+type RecommendationFilter = 'all' | 'support' | 'oppose' | 'engage';
+
 interface BillsListProps {
   preferences: UserPreference[];
   zipCode: string;
-  onCallRep: (bill: OpenStatesBill, analysis: BillAnalysis) => void;
+  onCallRep: (bill: OpenStatesBill, analysis: BillAnalysis, index: number, filter: RecommendationFilter) => void;
+  initialIndex?: number;
+  initialFilter?: RecommendationFilter;
 }
-
-type RecommendationFilter = 'all' | 'support' | 'oppose' | 'engage';
 
 interface AnalyzedBill {
   bill: OpenStatesBill;
   analysis: BillAnalysis;
 }
 
-export function BillsList({ preferences, zipCode, onCallRep }: BillsListProps) {
+export function BillsList({ preferences, zipCode, onCallRep, initialIndex, initialFilter }: BillsListProps) {
   const [analyzedBills, setAnalyzedBills] = useState<AnalyzedBill[]>([]);
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<RecommendationFilter>('all');
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [filter, setFilter] = useState<RecommendationFilter>(initialFilter ?? 'all');
+  const [currentIndex, setCurrentIndex] = useState(initialIndex ?? 0);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
     async function loadAndAnalyzeBills() {
@@ -128,8 +131,12 @@ export function BillsList({ preferences, zipCode, onCallRep }: BillsListProps) {
       ? analyzedBills
       : analyzedBills.filter((b) => b.analysis.recommendation === filter);
 
-  // Reset index when filter changes
+  // Reset index when filter changes (but not on initial mount)
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     setCurrentIndex(0);
   }, [filter]);
 
@@ -305,7 +312,7 @@ export function BillsList({ preferences, zipCode, onCallRep }: BillsListProps) {
                 bill={currentBill.bill}
                 analysis={currentBill.analysis}
                 onLearnMore={() => window.open(currentBill.bill.openstates_url, '_blank')}
-                onCallRep={() => onCallRep(currentBill.bill, currentBill.analysis)}
+                onCallRep={() => onCallRep(currentBill.bill, currentBill.analysis, currentIndex, filter)}
               />
             </div>
           ) : null}
@@ -434,10 +441,23 @@ function BillCardWithAnalysis({
 
   const billStatus = getBillStatus();
 
-  // Construct Open States URL for the sponsor
+  // Construct official CA Legislature URL for the sponsor
   const getSponsorUrl = (): string | null => {
-    if (primarySponsor?.person?.id) {
-      return `https://openstates.org/person/${primarySponsor.person.id}/`;
+    const role = primarySponsor?.person?.current_role;
+    if (!role?.district) return null;
+
+    // Extract district number from strings like "11" or "District 11"
+    const districtMatch = role.district.match(/\d+/);
+    if (!districtMatch) return null;
+    const districtNum = parseInt(districtMatch[0], 10);
+
+    if (role.org_classification === 'upper') {
+      // California Senate
+      return `https://sd${districtNum}.senate.ca.gov/`;
+    } else if (role.org_classification === 'lower') {
+      // California Assembly - district-specific page (zero-pad single digits)
+      const paddedDistrict = districtNum.toString().padStart(2, '0');
+      return `https://www.assembly.ca.gov/assemblymembers/${paddedDistrict}`;
     }
     return null;
   };
@@ -457,9 +477,11 @@ function BillCardWithAnalysis({
           <span className={`text-lg font-semibold ${config.textColor}`}>
             {config.label}
           </span>
-          <span className={`text-sm font-medium ${config.textColor} opacity-75`}>
-            {confidencePercent}% confident
-          </span>
+          {analysis.recommendation !== 'engage' && (
+            <span className={`text-sm font-medium ${config.textColor} opacity-75`}>
+              {confidencePercent}% confident
+            </span>
+          )}
         </div>
       </div>
 
@@ -578,13 +600,7 @@ function BillCardWithAnalysis({
         </button>
         <button
           onClick={onCallRep}
-          className={`flex-1 py-2 px-4 rounded-lg text-white text-sm font-medium transition-colors ${
-            analysis.recommendation === 'support'
-              ? 'bg-green-500 hover:bg-green-600'
-              : analysis.recommendation === 'oppose'
-              ? 'bg-red-500 hover:bg-red-600'
-              : 'bg-blue-500 hover:bg-blue-600'
-          }`}
+          className="flex-1 py-2 px-4 rounded-lg text-white text-sm font-medium transition-colors bg-gray-900 hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100"
         >
           Call My Rep
         </button>

@@ -16,6 +16,8 @@ type AppStep = 'zipcode' | 'issues' | 'bills' | 'call';
 interface SelectedBillData {
   bill: OpenStatesBill;
   analysis: BillAnalysis;
+  index: number;
+  filter: 'all' | 'support' | 'oppose' | 'engage';
 }
 
 export default function Home() {
@@ -55,15 +57,15 @@ export default function Home() {
     setPreferences([]);
   };
 
-  const handleCallRep = (bill: OpenStatesBill, analysis: BillAnalysis) => {
-    setSelectedBillData({ bill, analysis });
+  const handleCallRep = (bill: OpenStatesBill, analysis: BillAnalysis, index: number, filter: 'all' | 'support' | 'oppose' | 'engage') => {
+    setSelectedBillData({ bill, analysis, index, filter });
     setStep('call');
   };
 
   const handleBack = () => {
     if (step === 'call') {
       setStep('bills');
-      setSelectedBillData(null);
+      // Keep selectedBillData so we can return to the same bill index
       setCallScript('');
       setSelectedRep(null);
     } else if (step === 'bills') {
@@ -282,10 +284,10 @@ export default function Home() {
           <div className="pt-4">
             <div className="max-w-lg mx-auto mb-6 text-center">
               <h2 className="text-3xl font-display text-gray-900 dark:text-white mb-2">
-                How do you feel about these issues?
+                How do you feel about this?
               </h2>
               <p className="text-gray-600 dark:text-gray-400">
-                Slide to indicate your position on each issue. This helps us
+                Indicate your position so we can
                 find bills that you might care about.
               </p>
             </div>
@@ -305,6 +307,8 @@ export default function Home() {
               preferences={preferences}
               zipCode={zipCode}
               onCallRep={handleCallRep}
+              initialIndex={selectedBillData?.index}
+              initialFilter={selectedBillData?.filter}
             />
 
             {/* Start over link */}
@@ -410,6 +414,16 @@ export default function Home() {
                         <p className="text-sm text-gray-400">
                           {selectedRep.party}
                         </p>
+                        {selectedRep.links && selectedRep.links.length > 0 && (
+                          <a
+                            href={selectedRep.links[0].url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-violet-600 dark:text-violet-400 hover:underline"
+                          >
+                            Official website →
+                          </a>
+                        )}
                       </div>
                     </div>
 
