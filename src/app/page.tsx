@@ -20,6 +20,30 @@ interface SelectedBillData {
   filter: 'all' | 'support' | 'oppose' | 'engage';
 }
 
+// Helper to get phone number from rep - handles both API response formats
+function getRepPhone(rep: OpenStatesPerson): { capitol?: string; district?: string } {
+  // Try direct fields first
+  const capitolDirect = rep.capitol_office?.voice;
+  const districtDirect = rep.district_office?.voice;
+
+  if (capitolDirect || districtDirect) {
+    return { capitol: capitolDirect, district: districtDirect };
+  }
+
+  // Try offices array
+  if (rep.offices && rep.offices.length > 0) {
+    const capitol = rep.offices.find(o => o.classification === 'capitol')?.voice;
+    const district = rep.offices.find(o => o.classification === 'district')?.voice;
+    const anyPhone = rep.offices.find(o => o.voice)?.voice;
+    return {
+      capitol: capitol || anyPhone,
+      district: district
+    };
+  }
+
+  return {};
+}
+
 export default function Home() {
   const [step, setStep] = useState<AppStep>('zipcode');
   const [zipCode, setZipCode] = useState('');
@@ -458,36 +482,60 @@ export default function Home() {
                     </div>
 
                     {/* Phone numbers */}
-                    <div className="space-y-2 mb-6">
-                      {selectedRep.capitol_office?.voice && (
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-500 dark:text-gray-400">
-                            Capitol Office
-                          </span>
-                          <span className="font-mono text-gray-700 dark:text-gray-300">
-                            {selectedRep.capitol_office.voice}
-                          </span>
-                        </div>
-                      )}
-                      {selectedRep.district_office?.voice && (
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-500 dark:text-gray-400">
-                            District Office
-                          </span>
-                          <span className="font-mono text-gray-700 dark:text-gray-300">
-                            {selectedRep.district_office.voice}
-                          </span>
-                        </div>
-                      )}
-                    </div>
+                    {(() => {
+                      const phones = getRepPhone(selectedRep);
+                      return (
+                        <>
+                          <div className="space-y-2 mb-6">
+                            {phones.capitol && (
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="text-gray-500 dark:text-gray-400">
+                                  Capitol Office
+                                </span>
+                                <span className="font-mono text-gray-700 dark:text-gray-300">
+                                  {phones.capitol}
+                                </span>
+                              </div>
+                            )}
+                            {phones.district && (
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="text-gray-500 dark:text-gray-400">
+                                  District Office
+                                </span>
+                                <span className="font-mono text-gray-700 dark:text-gray-300">
+                                  {phones.district}
+                                </span>
+                              </div>
+                            )}
+                          </div>
 
-                    {/* Call button */}
-                    {(selectedRep.capitol_office?.voice || selectedRep.district_office?.voice) ? (
-                      <a
-                        href={`tel:${selectedRep.capitol_office?.voice || selectedRep.district_office?.voice}`}
-                        className="w-full py-4 px-4 rounded-xl text-white font-medium text-lg flex items-center justify-center gap-2 transition-colors bg-blue-500 hover:bg-blue-600"
-                      >
-                        <svg
+                          {/* Call button */}
+                          {(phones.capitol || phones.district) ? (
+                            <a
+                              href={`tel:${phones.capitol || phones.district}`}
+                              className="w-full py-4 px-4 rounded-xl text-white font-medium text-lg flex items-center justify-center gap-2 transition-colors bg-blue-500 hover:bg-blue-600"
+                            >
+                              <svg
+                                className="w-6 h-6"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                                />
+                              </svg>
+                              Call Now
+                            </a>
+                          ) : (
+                            <button
+                              disabled
+                              className="w-full py-4 px-4 rounded-xl text-white font-medium text-lg flex items-center justify-center gap-2 bg-blue-500 opacity-50 cursor-not-allowed"
+                            >
+                              <svg
                           className="w-6 h-6"
                           fill="none"
                           stroke="currentColor"
@@ -500,29 +548,12 @@ export default function Home() {
                             d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
                           />
                         </svg>
-                        Call Now
-                      </a>
-                    ) : (
-                      <button
-                        disabled
-                        className="w-full py-4 px-4 rounded-xl text-white font-medium text-lg flex items-center justify-center gap-2 bg-blue-500 opacity-50 cursor-not-allowed"
-                      >
-                        <svg
-                          className="w-6 h-6"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                          />
-                        </svg>
-                        No phone available
-                      </button>
-                    )}
+                              No phone available
+                            </button>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 )}
               </div>

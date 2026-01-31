@@ -173,6 +173,14 @@ export interface OpenStatesPeopleResponse {
   };
 }
 
+export interface OpenStatesOffice {
+  classification: string;
+  address: string;
+  voice: string;
+  fax: string;
+  name: string;
+}
+
 export interface OpenStatesPerson {
   id: string;
   name: string;
@@ -194,18 +202,21 @@ export interface OpenStatesPerson {
   email: string;
   links: Link[];
   sources: Link[];
-  capitol_office: {
+  // Some API responses use these direct fields
+  capitol_office?: {
     name: string;
     address: string;
     voice: string;
     fax: string;
   } | null;
-  district_office: {
+  district_office?: {
     name: string;
     address: string;
     voice: string;
     fax: string;
   } | null;
+  // Other API responses use an offices array
+  offices?: OpenStatesOffice[];
 }
 
 export interface PeopleSearchParams {
