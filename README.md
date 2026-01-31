@@ -2,7 +2,7 @@
 
 Your voice in policies that impact your community.
 
-CivicPulse helps San Francisco residents discover California state bills that align with their values, then makes it easy to call their representatives with AI-generated scripts.
+CivicPulse helps US residents discover local, state and national bills that they might care about: in one way or another! Right now for the cOmpile hackathon it is hard coded for California State bills only.
 
 ## Features
 
