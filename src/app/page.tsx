@@ -75,6 +75,11 @@ export default function Home() {
     }
   };
 
+  // Scroll to top when step changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [step]);
+
   // Fetch representatives when entering call step
   useEffect(() => {
     if (step === 'call' && zipCode && representatives.length === 0) {
