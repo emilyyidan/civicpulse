@@ -1,36 +1,137 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CivicPulse
+
+Your voice in policies that impact your community.
+
+CivicPulse helps San Francisco residents discover California state bills that align with their values, then makes it easy to call their representatives with AI-generated scripts.
+
+## Features
+
+- **Personalized Bill Matching** — Set your positions on 15 policy issues (housing, environment, economy, etc.) and get bills matched to your values
+- **AI-Powered Analysis** — Claude analyzes each bill and explains why you'd likely support or oppose it
+- **One-Tap Calling** — Find your state Senator and Assembly member, with phone numbers ready to dial
+- **Smart Call Scripts** — AI-generated scripts tailored to each bill's current status (committee, floor vote, etc.)
+- **Offline Caching** — Bill analyses and scripts are cached locally so repeat visits are instant
+
+## Screenshots
+
+| Onboarding | Bill Cards | Call Your Rep |
+|------------|-----------|---------------|
+| Set your policy positions | Swipe through matched bills | One tap to call with script |
+
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **AI**: Anthropic Claude API
+- **Data**: Open States API (California bills & legislators)
+- **Fonts**: Bebas Neue, Fira Sans, JetBrains Mono
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+- API keys for Anthropic and Open States
+
+### Environment Variables
+
+Create a `.env.local` file in the project root:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Anthropic API key for Claude
+# Get one at https://console.anthropic.com/
+ANTHROPIC_API_KEY=sk-ant-...
+
+# Open States API key for bill/legislator data
+# Get one at https://openstates.org/accounts/register/
+OPEN_STATES_API_KEY=...
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Installation
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Clone the repo
+git clone https://github.com/emilyyidan/civicpulse.git
+cd civicpulse
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Install dependencies
+npm install
 
-## Learn More
+# Run development server
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Open [http://localhost:3000](http://localhost:3000) to see the app.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## How It Works
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Enter your zip code** — Currently limited to San Francisco (94xxx) for the MVP
+2. **Set your positions** — Slide through 15 policy issues to indicate your stance
+3. **Browse matched bills** — See bills analyzed against your preferences with support/oppose recommendations
+4. **Call your rep** — Select a bill, get an AI-generated call script, and dial your representative
 
-## Deploy on Vercel
+## Project Structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+src/
+├── app/
+│   ├── api/
+│   │   ├── bills/          # Fetch CA bills from Open States
+│   │   ├── representatives/ # Geo-lookup for legislators
+│   │   ├── analyze-bills/  # Claude bill analysis
+│   │   └── generate-script/ # Claude call script generation
+│   ├── page.tsx            # Main app (step-based flow)
+│   └── globals.css         # Tailwind + custom styles
+├── components/
+│   ├── ZipCodeEntry.tsx    # Zip code input
+│   ├── IssueCarousel.tsx   # Policy preference sliders
+│   ├── IssueSlider.tsx     # Individual issue slider
+│   └── BillsList.tsx       # Bill cards with analysis
+├── lib/
+│   ├── claude.ts           # Anthropic API integration
+│   ├── openstates.ts       # Open States API client
+│   ├── api-client.ts       # Frontend API helpers
+│   └── cache.ts            # LocalStorage caching
+├── data/
+│   └── issues.ts           # 15 policy issues config
+└── types/
+    ├── index.ts            # App types
+    └── openstates.ts       # API response types
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/bills` | GET | Fetch recent California bills |
+| `/api/bills/[id]` | GET | Get a specific bill |
+| `/api/representatives` | GET | Find legislators by zip code |
+| `/api/analyze-bills` | POST | Analyze bills against user preferences |
+| `/api/generate-script` | POST | Generate a call script for a bill |
+
+## Deployment
+
+Deploy on Vercel:
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/emilyyidan/civicpulse&env=ANTHROPIC_API_KEY,OPEN_STATES_API_KEY)
+
+Or manually:
+
+```bash
+npm run build
+npm start
+```
+
+## Contributing
+
+This project was built for a hackathon. Contributions welcome!
+
+## License
+
+MIT
+
+---
+
+Built with Claude by Emily Wang
