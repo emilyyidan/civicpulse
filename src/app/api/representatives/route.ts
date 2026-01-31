@@ -64,6 +64,11 @@ export async function GET(request: NextRequest) {
         person.current_role !== null
     );
 
+    // Debug: log the raw data structure for first legislator
+    if (stateLegislators.length > 0) {
+      console.log('Sample legislator data:', JSON.stringify(stateLegislators[0], null, 2));
+    }
+
     return NextResponse.json({
       results: stateLegislators,
       coordinates,

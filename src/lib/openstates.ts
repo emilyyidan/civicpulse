@@ -138,6 +138,7 @@ class OpenStatesAPI {
     return this.fetch<OpenStatesPeopleResponse>('/people.geo', {
       lat: lat,
       lng: lng,
+      include: ['offices', 'links'],
     });
   }
 
