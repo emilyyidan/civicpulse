@@ -177,14 +177,6 @@ export default function Home() {
     }
   }, [selectedRep, selectedBillData, preferences, zipCode]);
 
-  const handleCall = () => {
-    if (selectedRep?.capitol_office?.voice) {
-      window.location.href = `tel:${selectedRep.capitol_office.voice}`;
-    } else if (selectedRep?.district_office?.voice) {
-      window.location.href = `tel:${selectedRep.district_office.voice}`;
-    }
-  };
-
   // Format script with line breaks and bold key phrases
   const formatScript = (script: string): string => {
     // Add line breaks after sentences for better readability
@@ -485,29 +477,47 @@ export default function Home() {
                     </div>
 
                     {/* Call button */}
-                    <button
-                      onClick={handleCall}
-                      disabled={
-                        !selectedRep.capitol_office?.voice &&
-                        !selectedRep.district_office?.voice
-                      }
-                      className="w-full py-4 px-4 rounded-xl text-white font-medium text-lg flex items-center justify-center gap-2 transition-colors bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <svg
-                        className="w-6 h-6"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                    {(selectedRep.capitol_office?.voice || selectedRep.district_office?.voice) ? (
+                      <a
+                        href={`tel:${selectedRep.capitol_office?.voice || selectedRep.district_office?.voice}`}
+                        className="w-full py-4 px-4 rounded-xl text-white font-medium text-lg flex items-center justify-center gap-2 transition-colors bg-blue-500 hover:bg-blue-600"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                        />
-                      </svg>
-                      Call Now
-                    </button>
+                        <svg
+                          className="w-6 h-6"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                          />
+                        </svg>
+                        Call Now
+                      </a>
+                    ) : (
+                      <button
+                        disabled
+                        className="w-full py-4 px-4 rounded-xl text-white font-medium text-lg flex items-center justify-center gap-2 bg-blue-500 opacity-50 cursor-not-allowed"
+                      >
+                        <svg
+                          className="w-6 h-6"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                          />
+                        </svg>
+                        No phone available
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
