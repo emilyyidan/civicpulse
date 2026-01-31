@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, TouchEvent } from 'react';
 import { OpenStatesBill } from '@/types/openstates';
 import { UserPreference } from '@/types';
 import { BillAnalysis } from '@/lib/claude';
@@ -38,6 +38,38 @@ export function BillsList({ preferences, zipCode, onCallRep, initialIndex, initi
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const isFirstRender = useRef(true);
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
+
+  // Handle touch events for swipe navigation
+  const handleTouchStart = (e: TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchEndX.current = null;
+  };
+
+  const handleTouchMove = (e: TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+
+    const diff = touchStartX.current - touchEndX.current;
+    const minSwipeDistance = 50;
+
+    if (Math.abs(diff) > minSwipeDistance) {
+      if (diff > 0) {
+        // Swiped left -> go to next
+        goToNext();
+      } else {
+        // Swiped right -> go to previous
+        goToPrevious();
+      }
+    }
+
+    touchStartX.current = null;
+    touchEndX.current = null;
+  };
 
   useEffect(() => {
     async function loadAndAnalyzeBills() {
@@ -247,7 +279,7 @@ export function BillsList({ preferences, zipCode, onCallRep, initialIndex, initi
   return (
     <div>
       {/* Filter tabs */}
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-2 justify-center">
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-2 px-1 md:justify-center">
         {(
           [
             { key: 'all', label: 'All', color: 'gray' },
@@ -279,11 +311,11 @@ export function BillsList({ preferences, zipCode, onCallRep, initialIndex, initi
 
       {/* Card with side navigation arrows */}
       <div className="flex items-center gap-2">
-        {/* Left arrow */}
+        {/* Left arrow - hidden on mobile */}
         <button
           onClick={goToPrevious}
           disabled={currentIndex === 0 || filteredBills.length <= 1}
-          className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-slate-300 dark:hover:bg-slate-800 disabled:opacity-20 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-all"
+          className="hidden md:flex flex-shrink-0 w-12 h-12 items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-slate-300 dark:hover:bg-slate-800 disabled:opacity-20 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-all"
           aria-label="Previous bill"
         >
           <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -291,8 +323,13 @@ export function BillsList({ preferences, zipCode, onCallRep, initialIndex, initi
           </svg>
         </button>
 
-        {/* Bill card */}
-        <div className="flex-1 overflow-hidden">
+        {/* Bill card with touch support */}
+        <div
+          className="flex-1 overflow-hidden touch-pan-y"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
           {filteredBills.length === 0 ? (
             <div className="text-center py-12 text-gray-500 dark:text-gray-400">
               <p>No bills found for this filter.</p>
@@ -318,11 +355,11 @@ export function BillsList({ preferences, zipCode, onCallRep, initialIndex, initi
           ) : null}
         </div>
 
-        {/* Right arrow */}
+        {/* Right arrow - hidden on mobile */}
         <button
           onClick={goToNext}
           disabled={currentIndex === filteredBills.length - 1 || filteredBills.length <= 1}
-          className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-slate-300 dark:hover:bg-slate-800 disabled:opacity-20 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-all"
+          className="hidden md:flex flex-shrink-0 w-12 h-12 items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-slate-300 dark:hover:bg-slate-800 disabled:opacity-20 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-all"
           aria-label="Next bill"
         >
           <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
