@@ -4,6 +4,14 @@ Your voice in policies that impact your community.
 
 CivicPulse helps US residents discover local, state and national bills that they might care about: in one way or another! Right now for the cOmpile hackathon it is hard coded for California State bills only.
 
+## Context
+This was built in ~2 hrs for a hackathon in late Jan 2026. I built this almost entirely in Claude Code's CLI which I also used for initial problem space brainstorming. We're using Sonnet 4 for the LLM calls because...hackathon and cheaper :)
+
+
+https://github.com/user-attachments/assets/e76ae608-a487-42d8-a87a-77ed7abc78ac
+
+
+
 ## Features
 
 - **Personalized Bill Matching** — Set your positions on 15 policy issues (housing, environment, economy, etc.) and get bills matched to your values
@@ -132,6 +140,3 @@ This project was built for a hackathon. Contributions welcome!
 
 MIT
 
----
-
-Built with Claude by Emily Wang
